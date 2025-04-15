@@ -13,14 +13,18 @@ const GH_TOKEN = process.env.GH_TOKEN;
 const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
 
 if (!PROJECT_ROOT) {
-  project_root_spinner.fail("PROJECT_ROOT is not set.");
+  project_root_spinner.fail(
+    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/release-test"
+  );
   process.exit(1);
 }
 project_root_spinner.stop();
 
 const gh_token_spinner = ora("Checking GH_TOKEN variable...").start();
 if (!GH_TOKEN) {
-  console.error("GH_TOKEN is not set.");
+  gh_token_spinner.fail(
+    "GH_TOKEN env variable is not set. See: https://github.com/settings/tokens/new (scope: repo)"
+  );
   process.exit(1);
 }
 gh_token_spinner.stop();
