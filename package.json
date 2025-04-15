@@ -18,21 +18,27 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "iwmywn-release": "./dist/index.mjs"
+  },
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub"
   },
   "keywords": [],
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
-    "@octokit/rest": "^21.1.1",
     "@types/node": "^22.14.1",
     "@types/readline-sync": "^1.4.8",
-    "dotenv": "^16.5.0",
-    "ora": "^8.2.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
     "unbuild": "^3.5.0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "dotenv": "^16.5.0",
+    "ora": "^8.2.0",
+    "readline-sync": "^1.4.10"
   }
 }

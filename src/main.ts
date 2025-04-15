@@ -3,19 +3,29 @@ import { Octokit } from "@octokit/rest";
 import dotenv from "dotenv";
 import fs from "fs";
 import readlineSync from "readline-sync";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
 import ora from "ora";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 dotenv.config();
 
-// const args = process.argv.slice(2);
-// const DEFAULT_BRANCH = args[0];
-const PROJECT_ROOT = path.resolve(__dirname, "../");
-const octokit = new Octokit({ auth: process.env.GH_TOKEN });
+const PROJECT_ROOT = process.env.PROJECT_ROOT;
+const GH_TOKEN = process.env.GH_TOKEN;
+
+const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
+
+if (!PROJECT_ROOT) {
+  project_root_spinner.fail("PROJECT_ROOT is not set.");
+  process.exit(1);
+}
+project_root_spinner.stop();
+
+const gh_token_spinner = ora("Checking GH_TOKEN variable...").start();
+if (!GH_TOKEN) {
+  console.error("GH_TOKEN is not set.");
+  process.exit(1);
+}
+gh_token_spinner.stop();
+
+const octokit = new Octokit({ auth: GH_TOKEN });
 
 const run = (cmd: string) => execSync(cmd, { stdio: "pipe" }).toString();
 
@@ -24,7 +34,7 @@ const runRoot = (cmd: string) =>
     stdio: "pipe",
   }).toString();
 
-await validateToken();
+// await validateToken();
 async function validateToken(): Promise<void> {
   const spinner = ora("Validating GitHub token...").start();
 
@@ -329,7 +339,7 @@ async function createGithubRelease(
   }
 }
 
-async function main() {
+export async function main() {
   console.log("Starting release process...");
   const spinner = ora().start();
   await validateToken();
@@ -372,5 +382,3 @@ async function main() {
 
   spinner.stop();
 }
-
-// main();

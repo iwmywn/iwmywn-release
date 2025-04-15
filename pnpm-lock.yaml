@@ -7,22 +7,26 @@ settings:
 importers:
 
   .:
-    devDependencies:
+    dependencies:
       '@octokit/rest':
         specifier: ^21.1.1
         version: 21.1.1
-      '@types/node':
-        specifier: ^22.14.1
-        version: 22.14.1
-      '@types/readline-sync':
-        specifier: ^1.4.8
-        version: 1.4.8
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
       ora:
         specifier: ^8.2.0
         version: 8.2.0
+      readline-sync:
+        specifier: ^1.4.10
+        version: 1.4.10
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.14.1
+      '@types/readline-sync':
+        specifier: ^1.4.8
+        version: 1.4.8
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
@@ -944,6 +948,10 @@ packages:
     resolution: {integrity: sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
+  readline-sync@1.4.10:
+    resolution: {integrity: sha512-gNva8/6UAe8QYepIQH/jQ2qn91Qj0B9sYjMBBs3QOB8F2CXcKgLxQaJRP76sWVRQt+QU+8fAkCbCvjjMFu7Ycw==}
+    engines: {node: '>= 0.8.0'}
+
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
@@ -1849,6 +1857,8 @@ snapshots:
       source-map-js: 1.2.1
 
   pretty-bytes@6.1.1: {}
+
+  readline-sync@1.4.10: {}
 
   resolve-pkg-maps@1.0.0: {}
 
