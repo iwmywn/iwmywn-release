@@ -1,0 +1,38 @@
+{
+  "name": "@iwmywn/release",
+  "author": "Hoang Anh Tuan <itsmethu2408@gmail.com>",
+  "version": "1.0.0",
+  "description": "release helper for my own projects",
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@octokit/rest": "^21.1.1",
+    "@types/node": "^22.14.1",
+    "@types/readline-sync": "^1.4.8",
+    "dotenv": "^16.5.0",
+    "ora": "^8.2.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "unbuild": "^3.5.0"
+  }
+}
