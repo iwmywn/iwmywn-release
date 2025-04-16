@@ -1,4 +1,4 @@
-import { exec } from "child_process";
+import { execSync } from "child_process";
 import { getOwnerAndRepo } from "./release";
 
 const lineDelimiter =
@@ -35,20 +35,17 @@ type CommitTypes =
   | "chore"
   | "revert";
 
-function execPromise(cmd: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    exec(cmd, (err, stdout, _stderr) => {
-      if (err) reject(err);
-      resolve(stdout);
-    });
-  });
-}
-
-async function getLog(): Promise<string> {
-  const lastTag = await execPromise(`git describe --tags --abbrev=0`);
-  return execPromise(
-    `git log --oneline ${lastTag.trim()}..HEAD --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
-  );
+function getLog(): string {
+  let range = "";
+  try {
+    const lastTag = execSync(`git describe --tags --abbrev=0`);
+    range = `${lastTag.toString().trim()}..HEAD`;
+  } catch {
+    range = "--root";
+  }
+  return execSync(
+    `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
+  ).toString();
 }
 
 const titles: Record<"feat" | "impr" | "fix", string> = {
@@ -192,7 +189,7 @@ const header =
   "Thank you to all the contributors who made this release possible!";
 
 async function buildChangelog(): Promise<string> {
-  let logString = await getLog();
+  let logString = getLog();
   const splitLog = logString.split(lineDelimiter);
 
   const log = convertStringToLog(splitLog);
