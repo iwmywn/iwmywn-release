@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import { getOwnerAndRepo } from "./main";
 
 const lineDelimiter =
   "thisismylinedelimiterthatwilldefinitelynotappearintheactualcommitmessage";
@@ -6,9 +7,9 @@ const logDelimiter =
   "thisismylogdelimiterthatwilldefinitelynotappearintheactualcommitmessage";
 
 async function getLog() {
-  function execPromise(command) {
+  function execPromise(cmd: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      exec(command, (err, stdout, _stderr) => {
+      exec(cmd, (err, stdout, _stderr) => {
         if (err) reject(err);
         resolve(stdout);
       });
@@ -22,31 +23,6 @@ async function getLog() {
   );
 }
 
-// function itemIsAddingQuotes(item) {
-//   const scopeIsQuote =
-//     item.scope?.includes("quote") ||
-//     item.scope?.includes("quotes") ||
-//     item.message?.includes("quote");
-
-//   const messageAdds =
-//     item.message.includes("add") ||
-//     item.message.includes("added") ||
-//     item.message.includes("adding") ||
-//     item.message.includes("adds");
-
-//   return scopeIsQuote && messageAdds;
-// }
-
-// function itemIsAddressingQuoteReports(item) {
-//   const scopeIsQuote =
-//     item.scope?.includes("quote") || item.scope?.includes("quotes");
-
-//   const messageReport =
-//     item.message.includes("report") || item.message.includes("reports");
-
-//   return scopeIsQuote && messageReport;
-// }
-
 const titles = {
   feat: "Features",
   impr: "Improvements",
@@ -54,15 +30,17 @@ const titles = {
 };
 
 function getPrLink(pr: string) {
+  const { owner, repo } = getOwnerAndRepo();
   const prNum = pr.replace("#", "");
-  return `[#${prNum}](https://github.com/monkeytypegame/monkeytype/pull/${prNum})`;
+  return `[#${prNum}](https://github.com/${owner}/${repo}/pull/${prNum})`;
 }
 
 function getCommitLink(hash: string, longHash: string) {
-  return `[${hash}](https://github.com/monkeytypegame/monkeytype/commit/${longHash})`;
+  const { owner, repo } = getOwnerAndRepo();
+  return `[${hash}](https://github.com/${owner}/${repo}/commit/${longHash})`;
 }
 
-function buildItems(items, mergeTypeAndScope = false) {
+function buildItems(items, mergeTypeAndScope: boolean = false) {
   let ret = "";
   for (let item of items) {
     let scope = item.scope ? `**${item.scope}:** ` : "";
@@ -207,38 +185,6 @@ async function main() {
       return filtered;
     })
     .flat().length;
-
-  let quoteAddCommits = log.filter((item) => itemIsAddingQuotes(item));
-  log = log.filter((item) => !itemIsAddingQuotes(item));
-
-  let quoteReportCommits = log.filter((item) =>
-    itemIsAddressingQuoteReports(item)
-  );
-  log = log.filter((item) => !itemIsAddressingQuoteReports(item));
-
-  if (quoteAddCommits.length > 0) {
-    log.push({
-      hashes: quoteAddCommits.map((item) => item.hashes).flat(),
-      type: "impr",
-      scope: "quotes",
-      message: "add quotes in various languages",
-      usernames: quoteAddCommits.map((item) => item.usernames).flat(),
-      prs: quoteAddCommits.map((item) => item.prs).flat(),
-      body: "",
-    });
-  }
-
-  if (quoteReportCommits.length > 0) {
-    log.push({
-      hashes: quoteReportCommits.map((item) => item.hashes).flat(),
-      type: "fix",
-      scope: "quotes",
-      message: "update or remove quotes reported by users",
-      usernames: quoteReportCommits.map((item) => item.usernames).flat(),
-      prs: quoteReportCommits.map((item) => item.prs).flat(),
-      body: "",
-    });
-  }
 
   let final = "";
 
