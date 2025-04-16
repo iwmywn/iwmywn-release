@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import { Octokit } from "@octokit/rest";
 import dotenv from "dotenv";
 import fs from "fs";
+import path from "path";
 import readlineSync from "readline-sync";
 import ora from "ora";
 import { buildChangelog } from "./changelogBuilder";
@@ -262,13 +263,39 @@ function updatePackage(newVer: string): void {
   }
 }
 
-// updateChangelog();
-function updateChangelog(): void {
+// const newContent: string = `Thank you to all the contributors who made this release possible!
+
+// ### Nerd stuff
+
+// These changes will not be visible to users, but are included for completeness and to credit contributors.
+
+// - **chore:** add message for again branch (@iwmywn-test) ([#22](https://github.com/iwmywn/release-test/pull/22)) ([f36bbad](https://github.com/iwmywn/release-test/commit/f36bbad9f3f86ba1e26a851fbcbe52b0382a009e))
+// - **chore:** add message for pr-test branch ([#21](https://github.com/iwmywn/release-test/pull/21)) ([039fc6b](https://github.com/iwmywn/release-test/commit/039fc6be43c2ba164e8264f4d40c109796efe270))
+// - **chore:** add message ([029dd57](https://github.com/iwmywn/release-test/commit/029dd575bdb6bc49af8eb58fe17caf75d812556e))`;
+// updateChangelog("1.1.2", "1.1.3", newContent);
+function updateChangelog(
+  currentVer: string,
+  newVer: string,
+  newContent: string
+): void {
   const spinner = ora("Updating CHANGELOG.md...").start();
 
   try {
-    runRoot("npx conventional-changelog -p angular -i CHANGELOG.md -s");
-    spinner.succeed("CHANGELOG.md updated.");
+    const changelogPath = path.join(PROJECT_ROOT!, "CHANGELOG.md");
+    const { owner, repo } = getOwnerAndRepo();
+    const versionHeader = `## [${newVer}](https://github.com/${owner}/${repo}/compare/v${currentVer}...v${newVer})`;
+
+    const existingContent = fs.existsSync(changelogPath)
+      ? fs.readFileSync(changelogPath, "utf-8")
+      : "";
+
+    const finalContent =
+      `${versionHeader}\n\n${newContent.trim()}\n\n\n` +
+      existingContent.trimStart();
+
+    fs.writeFileSync(changelogPath, finalContent, "utf-8");
+
+    spinner.succeed("CHANGELOG.md has been updated.");
   } catch (error) {
     spinner.fail("Failed to update CHANGELOG.md.");
     console.error(error);
@@ -314,7 +341,8 @@ export function getOwnerAndRepo(): { owner: string; repo: string } {
         owner: match[1],
         repo: match[2],
       };
-      spinner.succeed(`Repo detected: ${result.owner}/${result.repo}`);
+      // spinner.succeed(`Repo detected: ${result.owner}/${result.repo}`);
+      spinner.stop();
       return result;
     } else {
       spinner.fail("Invalid Git repository URL.");
@@ -390,7 +418,7 @@ async function release() {
   }
 
   updatePackage(newVer);
-  // updateChangelog();
+  updateChangelog(currentVer, newVer, changelog);
   createCommitAndTag(newVer, default_branch);
   const { owner, repo } = getOwnerAndRepo();
   await createGithubRelease(owner, repo, newVer, changelog);
