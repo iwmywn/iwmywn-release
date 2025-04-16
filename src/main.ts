@@ -11,17 +11,8 @@ dotenv.config();
 const PROJECT_ROOT = process.env.PROJECT_ROOT;
 const GH_TOKEN = process.env.GH_TOKEN;
 
-const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
-
-if (!PROJECT_ROOT) {
-  project_root_spinner.fail(
-    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/iwmywn-release"
-  );
-  process.exit(1);
-}
-project_root_spinner.stop();
-
 const gh_token_spinner = ora("Checking GH_TOKEN variable...").start();
+
 if (!GH_TOKEN) {
   gh_token_spinner.fail(
     "GH_TOKEN env variable is not set. See: https://github.com/settings/tokens/new (scope: repo)"
@@ -29,6 +20,16 @@ if (!GH_TOKEN) {
   process.exit(1);
 }
 gh_token_spinner.stop();
+
+const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
+
+if (!PROJECT_ROOT) {
+  project_root_spinner.fail(
+    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/iwmywn-release (use '/' instead of '\\')"
+  );
+  process.exit(1);
+}
+project_root_spinner.stop();
 
 const octokit = new Octokit({ auth: GH_TOKEN });
 
@@ -350,7 +351,7 @@ async function createGithubRelease(
 }
 
 async function main() {
-  console.log("Starting release process...");
+  console.log("\n\t\t🚀 STARTING RELEASE PROCESS...\n");
   const spinner = ora().start();
   await validateToken();
 
