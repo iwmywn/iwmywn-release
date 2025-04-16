@@ -11,34 +11,45 @@ dotenv.config();
 const PROJECT_ROOT = process.env.PROJECT_ROOT;
 const GH_TOKEN = process.env.GH_TOKEN;
 
-const gh_token_spinner = ora("Checking GH_TOKEN variable...").start();
-
-if (!GH_TOKEN) {
-  gh_token_spinner.fail(
-    "GH_TOKEN env variable is not set. See: https://github.com/settings/tokens/new (scope: repo)"
-  );
-  process.exit(1);
-}
-gh_token_spinner.stop();
-
-const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
-
-if (!PROJECT_ROOT) {
-  project_root_spinner.fail(
-    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/iwmywn-release (use '/' instead of '\\')"
-  );
-  process.exit(1);
-}
-project_root_spinner.stop();
-
 const octokit = new Octokit({ auth: GH_TOKEN });
 
 const run = (cmd: string) => execSync(cmd, { stdio: "pipe" }).toString();
-
 const runRoot = (cmd: string) =>
   execSync(`cd ${PROJECT_ROOT} && ${cmd}`, {
     stdio: "pipe",
   }).toString();
+
+function validateEnv(): void {
+  // GH_TOKEN
+  const spinner = ora("Checking GH_TOKEN variable...").start();
+
+  if (!GH_TOKEN) {
+    spinner.fail(
+      "GH_TOKEN env variable is not set.\nExample: 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\nSee: https://github.com/settings/tokens/new (scope: repo)"
+    );
+    process.exit(1);
+  }
+
+  // PROJECT_ROOT
+  spinner.text = "Checking PROJECT_ROOT variable...";
+
+  if (!PROJECT_ROOT) {
+    spinner.fail(
+      `PROJECT_ROOT env variable is not set.\nExample:\n\tC:/Users/tuanh/code/iwmywn-release\n   or   C:\\\\Users\\\\tuanh\\\\code\\\\iwmywn-release`
+    );
+    process.exit(1);
+  }
+
+  const invalidChars = /[*?"<>|]/;
+  if (invalidChars.test(PROJECT_ROOT)) {
+    spinner.fail(
+      `PROJECT_ROOT contains invalid characters. The following characters are not allowed: * ? " < > |`
+    );
+    process.exit(1);
+  }
+
+  spinner.stop();
+}
 
 // await validateToken();
 async function validateToken(): Promise<void> {
@@ -351,6 +362,8 @@ async function createGithubRelease(
 }
 
 async function main() {
+  validateEnv();
+
   console.log("\n\t\t🚀 STARTING RELEASE PROCESS...\n");
   const spinner = ora().start();
   await validateToken();
