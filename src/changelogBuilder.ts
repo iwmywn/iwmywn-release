@@ -21,7 +21,7 @@ interface LogItem {
   body: string;
 }
 
-type CommitType =
+type CommitTypes =
   | "feat"
   | "impr"
   | "fix"
@@ -95,7 +95,7 @@ function buildItems(
   return ret;
 }
 
-function buildSection(type: CommitType, allItems: LogItem[]): string {
+function buildSection(type: CommitTypes, allItems: LogItem[]): string {
   let ret = `### ${titles[type as keyof typeof titles]}\n\n`;
 
   const items = allItems.filter(
@@ -213,7 +213,7 @@ async function buildChangelog(): Promise<string> {
   }
 
   const sections: string[] = [];
-  for (const type of Object.keys(titles) as CommitType[]) {
+  for (const type of Object.keys(titles) as CommitTypes[]) {
     const section = buildSection(type, log);
     if (section) {
       sections.push(section);
