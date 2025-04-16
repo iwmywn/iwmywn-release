@@ -181,24 +181,15 @@ function checkUncommittedChanges(): void {
 async function generateChangelog(): Promise<string> {
   const spinner = ora("Generating changelog...").start();
 
-  // try {
-  //   const rawChangelog = runRoot("npx conventional-changelog -p angular -r 1");
-  //   const changelogLines = rawChangelog.split("\n");
-  //   const changelog = changelogLines
-  //     .filter((line, index) => !(index === 0 && line.startsWith("## ")))
-  //     .join("\n")
-  //     .replace(/"/g, '\\"');
+  const changelog = await buildChangelog();
 
-  //   spinner.succeed("Changelog generated.");
-  //   return changelog;
-  // } catch (error) {
-  //   spinner.fail("Failed to generate changelog.");
-  //   console.error(error);
-  //   process.exit(1);
-  // }
-
-  const changelog = await generateChangelog();
-  spinner.succeed("Changelog generated.");
+  if (!changelog.trim()) {
+    spinner.warn(
+      "No new contributions found since the last release. Consider carefully whether a release is necessary."
+    );
+  } else {
+    spinner.succeed("Changelog generated.");
+  }
 
   return changelog;
 }
@@ -381,7 +372,7 @@ async function release() {
 
   checkUncommittedChanges();
 
-  const changelog = await buildChangelog();
+  const changelog = await generateChangelog();
 
   console.log(changelog);
 
