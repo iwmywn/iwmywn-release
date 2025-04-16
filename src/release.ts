@@ -311,6 +311,9 @@ function createCommitAndTag(newVer: string, default_branch: string): void {
     run(`git commit -m "chore: release v${newVer}" --no-verify`);
     run(`git tag v${newVer}`);
 
+    spinner.text = "Formatting package.json and CHANGELOG.md...";
+    runRoot("npx -y prettier --write package.json CHANGELOG.md");
+
     spinner.text = "Pushing changes and tag...";
     run(`git push origin ${default_branch} --tags --no-verify`);
 
