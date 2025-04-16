@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import readlineSync from "readline-sync";
 import ora from "ora";
+import { releaseLog } from "./releaseLog";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const project_root_spinner = ora("Checking PROJECT_ROOT variable...").start();
 
 if (!PROJECT_ROOT) {
   project_root_spinner.fail(
-    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/release-test"
+    "PROJECT_ROOT env variable is not set. Example: C:/Users/tuanh/code/iwmywn-release"
   );
   process.exit(1);
 }
@@ -165,24 +166,29 @@ function checkUncommittedChanges(): void {
 }
 
 // console.log(generateChangelog());
-function generateChangelog(): string {
+async function generateChangelog(): Promise<string> {
   const spinner = ora("Generating changelog...").start();
 
-  try {
-    const rawChangelog = runRoot("npx conventional-changelog -p angular -r 1");
-    const changelogLines = rawChangelog.split("\n");
-    const changelog = changelogLines
-      .filter((line, index) => !(index === 0 && line.startsWith("## ")))
-      .join("\n")
-      .replace(/"/g, '\\"');
+  // try {
+  //   const rawChangelog = runRoot("npx conventional-changelog -p angular -r 1");
+  //   const changelogLines = rawChangelog.split("\n");
+  //   const changelog = changelogLines
+  //     .filter((line, index) => !(index === 0 && line.startsWith("## ")))
+  //     .join("\n")
+  //     .replace(/"/g, '\\"');
 
-    spinner.succeed("Changelog generated.");
-    return changelog;
-  } catch (error) {
-    spinner.fail("Failed to generate changelog.");
-    console.error(error);
-    process.exit(1);
-  }
+  //   spinner.succeed("Changelog generated.");
+  //   return changelog;
+  // } catch (error) {
+  //   spinner.fail("Failed to generate changelog.");
+  //   console.error(error);
+  //   process.exit(1);
+  // }
+
+  const changelog = await releaseLog();
+  spinner.succeed("Changelog generated.");
+
+  return changelog;
 }
 
 // getCurrentVersion();
@@ -272,11 +278,11 @@ function createCommitAndTag(newVer: string, default_branch: string): void {
 
   try {
     run("git add .");
-    run(`git commit -m "chore: release v${newVer}"`);
+    run(`git commit -m "chore: release v${newVer}" --no-verify`);
     run(`git tag v${newVer}`);
 
     spinner.text = "Pushing changes and tag...";
-    run(`git push origin ${default_branch} --tags`);
+    run(`git push origin ${default_branch} --tags --no-verify`);
 
     spinner.succeed(`Release v${newVer} committed and tagged.`);
   } catch (error) {
@@ -293,7 +299,7 @@ function createCommitAndTag(newVer: string, default_branch: string): void {
 // } else {
 //   console.log(`Could not parse owner/repo`);
 // }
-function getOwnerAndRepo(): { owner: string; repo: string } {
+export function getOwnerAndRepo(): { owner: string; repo: string } {
   const spinner = ora("Getting GitHub owner and repo...").start();
 
   try {
@@ -343,7 +349,7 @@ async function createGithubRelease(
   }
 }
 
-export async function main() {
+async function main() {
   console.log("Starting release process...");
   const spinner = ora().start();
   await validateToken();
@@ -361,7 +367,7 @@ export async function main() {
 
   checkUncommittedChanges();
 
-  const changelog = generateChangelog();
+  const changelog = await generateChangelog();
 
   console.log(changelog);
 
@@ -379,10 +385,12 @@ export async function main() {
   }
 
   updatePackage(newVer);
-  updateChangelog();
+  // updateChangelog();
   createCommitAndTag(newVer, default_branch);
   const { owner, repo } = getOwnerAndRepo();
   await createGithubRelease(owner, repo, newVer, changelog);
 
   spinner.stop();
 }
+
+export { main };

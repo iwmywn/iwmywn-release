@@ -6,41 +6,72 @@ const lineDelimiter =
 const logDelimiter =
   "thisismylogdelimiterthatwilldefinitelynotappearintheactualcommitmessage";
 
-async function getLog() {
-  function execPromise(cmd: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      exec(cmd, (err, stdout, _stderr) => {
-        if (err) reject(err);
-        resolve(stdout);
-      });
-    });
-  }
+interface CommitHash {
+  short: string;
+  full: string;
+}
 
-  return execPromise(`git describe --tags --abbrev=0 HEAD^`).then((lastTag) =>
-    execPromise(
-      `git log --oneline ${lastTag.trim()}..HEAD --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
-    )
+interface LogItem {
+  hashes: CommitHash[];
+  type: string;
+  scope?: string;
+  message: string;
+  usernames: string[];
+  prs: string[];
+  body: string;
+}
+
+type CommitType =
+  | "feat"
+  | "impr"
+  | "fix"
+  | "docs"
+  | "refactor"
+  | "perf"
+  | "test"
+  | "build"
+  | "ci"
+  | "style"
+  | "chore"
+  | "revert";
+
+function execPromise(cmd: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec(cmd, (err, stdout, _stderr) => {
+      if (err) reject(err);
+      resolve(stdout);
+    });
+  });
+}
+
+async function getLog(): Promise<string> {
+  const lastTag = await execPromise(`git describe --tags --abbrev=0 HEAD^`);
+  return execPromise(
+    `git log --oneline ${lastTag.trim()}..HEAD --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
   );
 }
 
-const titles = {
+const titles: Record<"feat" | "impr" | "fix", string> = {
   feat: "Features",
   impr: "Improvements",
   fix: "Fixes",
 };
 
-function getPrLink(pr: string) {
+function getPrLink(pr: string): string {
   const { owner, repo } = getOwnerAndRepo();
   const prNum = pr.replace("#", "");
   return `[#${prNum}](https://github.com/${owner}/${repo}/pull/${prNum})`;
 }
 
-function getCommitLink(hash: string, longHash: string) {
+function getCommitLink(hash: string, longHash: string): string {
   const { owner, repo } = getOwnerAndRepo();
   return `[${hash}](https://github.com/${owner}/${repo}/commit/${longHash})`;
 }
 
-function buildItems(items, mergeTypeAndScope: boolean = false) {
+function buildItems(
+  items: LogItem[],
+  mergeTypeAndScope: boolean = false
+): string {
   let ret = "";
   for (let item of items) {
     let scope = item.scope ? `**${item.scope}:** ` : "";
@@ -64,8 +95,8 @@ function buildItems(items, mergeTypeAndScope: boolean = false) {
   return ret;
 }
 
-function buildSection(type, allItems) {
-  let ret = `### ${titles[type]}\n\n`;
+function buildSection(type: CommitType, allItems: LogItem[]): string {
+  let ret = `### ${titles[type as keyof typeof titles]}\n\n`;
 
   const items = allItems.filter(
     (item) => item.type === type && !item.body.includes("!nuf")
@@ -78,7 +109,7 @@ function buildSection(type, allItems) {
   return (ret += buildItems(items));
 }
 
-function buildFooter(logs) {
+function buildFooter(logs: LogItem[]): string {
   let out =
     "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n";
 
@@ -91,13 +122,13 @@ function buildFooter(logs) {
   const fixLogs = logs.filter(
     (item) => item.type === "fix" && item.body.includes("!nuf")
   );
-  const styleLogs = logs.filter((item) => item.type === "style");
   const docLogs = logs.filter((item) => item.type === "docs");
   const refactorLogs = logs.filter((item) => item.type === "refactor");
   const perfLogs = logs.filter((item) => item.type === "perf");
-  const ciLogs = logs.filter((item) => item.type === "ci");
   const testLogs = logs.filter((item) => item.type === "test");
   const buildLogs = logs.filter((item) => item.type === "build");
+  const ciLogs = logs.filter((item) => item.type === "ci");
+  const styleLogs = logs.filter((item) => item.type === "style");
   const choreLogs = logs.filter((item) => item.type === "chore");
 
   const allOtherLogs = [
@@ -124,8 +155,8 @@ function buildFooter(logs) {
   return out;
 }
 
-function convertStringToLog(logString) {
-  let log = [];
+function convertStringToLog(logString: string[]): LogItem[] {
+  const log: LogItem[] = [];
   for (let line of logString) {
     if (line === "" || line === "\r" || line === "\n") continue;
 
@@ -133,31 +164,27 @@ function convertStringToLog(logString) {
       .split(logDelimiter)
       .map((s) => s.trim());
 
-    const [_, type, scope, message, username, pr] = title.split(
+    const match = title.match(
       /^(\w+)(?:\(([^)]+)\))?:\s+(.+?)(?:\s*\((@[^)]+)\))?(?:\s+\((#[^)]+)\))?$/
     );
+
+    if (!match) continue;
+
+    const [, type, scope, message, username, pr] = match;
 
     const usernames = username ? username.split(", ") : [];
     const prs = pr ? pr.split(", ") : [];
 
     if (type && message) {
       log.push({
-        hashes: [
-          {
-            short: shortHash,
-            full: hash,
-          },
-        ],
+        hashes: [{ short: shortHash, full: hash }],
         type,
         scope,
         message,
-        usernames: usernames || [],
-        prs: prs || [],
+        usernames,
+        prs,
         body: body || "",
       });
-    } else {
-      // console.log({ hash, shortHash, title, body });
-      // console.warn("skipping line due to invalid format: " + line);
     }
   }
   return log;
@@ -166,24 +193,19 @@ function convertStringToLog(logString) {
 const header =
   "Thank you to all the contributors who made this release possible!";
 
-async function main() {
+async function releaseLog(): Promise<string> {
   let logString = await getLog();
-  logString = logString.split(lineDelimiter);
+  const splitLog = logString.split(lineDelimiter);
 
-  let log = convertStringToLog(logString);
+  const log = convertStringToLog(splitLog);
 
   const contributorCount = log
-    .map((l) => {
-      const filtered = l.usernames.filter((u) => {
-        const lowerCased = u.toLowerCase();
-        return (
-          lowerCased !== "monkeytype-bot" &&
-          lowerCased !== "dependabot" &&
-          lowerCased !== "miodec"
-        );
-      });
-      return filtered;
-    })
+    .map((l) =>
+      l.usernames.filter((u) => {
+        const lower = u.toLowerCase();
+        return lower !== "dependabot";
+      })
+    )
     .flat().length;
 
   let final = "";
@@ -193,7 +215,7 @@ async function main() {
   }
 
   const sections: string[] = [];
-  for (const type of Object.keys(titles)) {
+  for (const type of Object.keys(titles) as CommitType[]) {
     const section = buildSection(type, log);
     if (section) {
       sections.push(section);
@@ -207,7 +229,8 @@ async function main() {
     final += "\n" + footer;
   }
 
-  console.log(final);
+  // console.log(final);
+  return final;
 }
 
-main();
+export { releaseLog };
