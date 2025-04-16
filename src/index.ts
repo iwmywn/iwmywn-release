@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { main } from "./main";
+import { release } from "./release";
 
-await main();
+await release();

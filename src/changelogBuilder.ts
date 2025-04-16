@@ -1,5 +1,5 @@
 import { exec } from "child_process";
-import { getOwnerAndRepo } from "./main";
+import { getOwnerAndRepo } from "./release";
 
 const lineDelimiter =
   "thisismylinedelimiterthatwilldefinitelynotappearintheactualcommitmessage";
@@ -191,7 +191,7 @@ function convertStringToLog(logString: string[]): LogItem[] {
 const header =
   "Thank you to all the contributors who made this release possible!";
 
-async function releaseLog(): Promise<string> {
+async function buildChangelog(): Promise<string> {
   let logString = await getLog();
   const splitLog = logString.split(lineDelimiter);
 
@@ -231,4 +231,4 @@ async function releaseLog(): Promise<string> {
   return final;
 }
 
-export { releaseLog };
+export { buildChangelog };

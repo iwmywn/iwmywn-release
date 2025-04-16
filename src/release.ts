@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import readlineSync from "readline-sync";
 import ora from "ora";
-import { releaseLog } from "./releaseLog";
+import { buildChangelog } from "./changelogBuilder";
 
 dotenv.config();
 
@@ -197,7 +197,7 @@ async function generateChangelog(): Promise<string> {
   //   process.exit(1);
   // }
 
-  const changelog = await releaseLog();
+  const changelog = await generateChangelog();
   spinner.succeed("Changelog generated.");
 
   return changelog;
@@ -361,7 +361,7 @@ async function createGithubRelease(
   }
 }
 
-async function main() {
+async function release() {
   validateEnv();
 
   console.log("\n\t\t🚀 STARTING RELEASE PROCESS...\n");
@@ -381,7 +381,7 @@ async function main() {
 
   checkUncommittedChanges();
 
-  const changelog = await generateChangelog();
+  const changelog = await buildChangelog();
 
   console.log(changelog);
 
@@ -407,4 +407,4 @@ async function main() {
   spinner.stop();
 }
 
-export { main };
+export { release };
