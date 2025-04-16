@@ -110,9 +110,6 @@ function buildSection(type: CommitType, allItems: LogItem[]): string {
 }
 
 function buildFooter(logs: LogItem[]): string {
-  let out =
-    "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n";
-
   const featLogs = logs.filter(
     (item) => item.type === "feat" && item.body.includes("!nuf")
   );
@@ -150,9 +147,10 @@ function buildFooter(logs: LogItem[]): string {
       index === self.findIndex((t) => t.hashes[0].full === item.hashes[0].full)
   );
 
-  out += buildItems(uniqueOtherLogs, true);
-
-  return out;
+  return uniqueOtherLogs.length > 0
+    ? "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n" +
+        buildItems(uniqueOtherLogs, true)
+    : "";
 }
 
 function convertStringToLog(logString: string[]): LogItem[] {
