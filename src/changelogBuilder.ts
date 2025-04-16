@@ -45,7 +45,7 @@ function execPromise(cmd: string): Promise<string> {
 }
 
 async function getLog(): Promise<string> {
-  const lastTag = await execPromise(`git describe --tags --abbrev=0 HEAD^`);
+  const lastTag = await execPromise(`git describe --tags --abbrev=0`);
   return execPromise(
     `git log --oneline ${lastTag.trim()}..HEAD --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
   );
