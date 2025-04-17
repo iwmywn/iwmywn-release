@@ -1,7 +1,7 @@
 {
   "name": "@iwmywn/release",
   "author": "Hoang Anh Tuan <itsmethu2408@gmail.com>",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "release helper for my own projects",
   "homepage": "",
   "repository": {
@@ -15,8 +15,7 @@
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "files": [
-    "dist",
-    "iwmywn-release.schema.json"
+    "dist"
   ],
   "bin": {
     "iwmywn-release": "./dist/index.mjs"
