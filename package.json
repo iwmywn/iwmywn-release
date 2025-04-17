@@ -1,7 +1,7 @@
 {
   "name": "@iwmywn/release",
   "author": "Hoang Anh Tuan <itsmethu2408@gmail.com>",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "release helper for my own projects",
   "homepage": "",
   "repository": {
@@ -23,7 +23,7 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
-    "release": "npm publish --access public"
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": [],
   "license": "MIT",
