@@ -218,7 +218,7 @@ async function buildChangelog(): Promise<string> {
 
   let final = "";
 
-  if (contributorCount > 0 || committers.length > 1) {
+  if (contributorCount > 1 || committers.length > 1) {
     final += header + "\n\n\n";
   }
 
