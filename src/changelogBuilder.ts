@@ -44,7 +44,7 @@ function getLog(): string {
     range = "--root";
   }
   return execSync(
-    `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b"`
+    `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`
   ).toString();
 }
 
@@ -150,12 +150,17 @@ function buildFooter(logs: LogItem[]): string {
     : "";
 }
 
-function convertStringToLog(logString: string[]): LogItem[] {
+function convertStringToLog(logString: string[]): {
+  log: LogItem[];
+  committers: string[];
+} {
   const log: LogItem[] = [];
+  const committers: string[] = [];
+
   for (let line of logString) {
     if (line === "" || line === "\r" || line === "\n") continue;
 
-    const [hash, shortHash, title, body] = line
+    const [hash, shortHash, title, body, committer] = line
       .split(logDelimiter)
       .map((s) => s.trim());
 
@@ -170,6 +175,14 @@ function convertStringToLog(logString: string[]): LogItem[] {
     const usernames = username ? username.split(", ") : [];
     const prs = pr ? pr.split(", ") : [];
 
+    if (
+      committer &&
+      !committers.includes(committer) &&
+      !committer.toLowerCase().includes("github")
+    ) {
+      committers.push(committer);
+    }
+
     if (type && message) {
       log.push({
         hashes: [{ short: shortHash, full: hash }],
@@ -182,7 +195,7 @@ function convertStringToLog(logString: string[]): LogItem[] {
       });
     }
   }
-  return log;
+  return { log, committers };
 }
 
 const header =
@@ -192,7 +205,7 @@ async function buildChangelog(): Promise<string> {
   let logString = getLog();
   const splitLog = logString.split(lineDelimiter);
 
-  const log = convertStringToLog(splitLog);
+  const { log, committers } = convertStringToLog(splitLog);
 
   const contributorCount = log
     .map((l) =>
@@ -205,7 +218,7 @@ async function buildChangelog(): Promise<string> {
 
   let final = "";
 
-  if (contributorCount > 0) {
+  if (contributorCount > 0 || committers.length > 1) {
     final += header + "\n\n\n";
   }
 
