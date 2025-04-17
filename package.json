@@ -15,7 +15,8 @@
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "files": [
-    "dist"
+    "dist",
+    "iwmywn-release.schema.json"
   ],
   "bin": {
     "iwmywn-release": "./dist/index.mjs"

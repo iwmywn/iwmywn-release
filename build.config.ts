@@ -1,7 +1,7 @@
 import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
-  entries: ["src/index", "iwmywn-release.schema.json"],
+  entries: ["src/index"],
   declaration: false,
   clean: true,
   rollup: {
