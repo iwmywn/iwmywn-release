@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "@iwmwn/release Config",
+  "description": "Configuration file for the @iwmywn/release CLI tool.",
+  "type": "object",
+  "required": ["token", "projectRoot"],
+  "properties": {
+    "token": {
+      "type": "string",
+      "description": "Your GitHub token used for authentication."
+    },
+    "projectRoot": {
+      "type": "string",
+      "description": "The root directory of your project."
+    },
+    "commitTypes": {
+      "type": "array",
+      "description": "List of allowed commit types for changelog generation. Defaults to [\"feat\", \"fix\", \"docs\", \"refactor\", \"perf\", \"test\", \"build\", \"ci\", \"style\", \"chore\"].",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "A non-empty commit type name"
+      },
+      "default": [
+        "feat",
+        "fix",
+        "docs",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "style",
+        "chore"
+      ]
+    },
+    "changeLog": {
+      "type": "string",
+      "description": "The filename of your changelog. Default is 'CHANGELOG.md'.",
+      "default": "CHANGELOG.md"
+    },
+    "titles": {
+      "type": "object",
+      "description": "Custom titles for different commit types in the changelog. Defaults to:\n\"feat\": \"Features\",\n\"impr\": \"Improvements\",\n\"fix\": \"Fixes\".",
+      "patternProperties": {
+        "^[a-zA-Z]+$": {
+          "type": "string",
+          "description": "A custom section title for this commit type."
+        }
+      },
+      "additionalProperties": false,
+      "default": {
+        "feat": "Features",
+        "impr": "Improvements",
+        "fix": "Fixes"
+      }
+    }
+  },
+  "additionalProperties": false
+}
