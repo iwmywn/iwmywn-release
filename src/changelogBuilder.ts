@@ -36,6 +36,12 @@ type CommitTypes =
   | "chore"
   | "revert";
 
+const titles: Record<"feat" | "impr" | "fix", string> = {
+  feat: "Features",
+  impr: "Improvements",
+  fix: "Bug Fixes",
+};
+
 function getLog(): string {
   const spinner = ora("Fetching Git log...").start();
   let range = "";
@@ -75,12 +81,6 @@ function getLog(): string {
     process.exit(1);
   }
 }
-
-const titles: Record<"feat" | "impr" | "fix", string> = {
-  feat: "Features",
-  impr: "Improvements",
-  fix: "Fixes",
-};
 
 function getPrLink(pr: string): string {
   const { owner, repo } = getOwnerAndRepo();
