@@ -304,15 +304,15 @@ function updateChangelog(
 }
 
 function createCommitAndTag(newVer: string, default_branch: string): void {
-  const spinner = ora("Creating commit and tag...").start();
+  const spinner = ora("Formatting package.json and CHANGELOG.md...").start();
 
   try {
+    runRoot("npx -y prettier --write package.json CHANGELOG.md");
+
+    spinner.text = "Creating commit and tag...";
     run("git add .");
     run(`git commit -m "chore: release v${newVer}" --no-verify`);
     run(`git tag v${newVer}`);
-
-    spinner.text = "Formatting package.json and CHANGELOG.md...";
-    runRoot("npx -y prettier --write package.json CHANGELOG.md");
 
     spinner.text = "Pushing changes and tag...";
     run(`git push origin ${default_branch} --tags --no-verify`);
