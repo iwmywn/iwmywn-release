@@ -18,7 +18,12 @@ if (existsSync(file)) {
     .getObfuscatedCode();
 
   writeFileSync(file, obfuscatedCode, "utf8");
+
+  const byteSize = Buffer.byteLength(obfuscatedCode, "utf8");
+  const sizeInKB = (byteSize / 1024).toFixed(2);
+
   console.log(`✅ Obfuscated: ${file}`);
+  console.log(`📦 Size: ${sizeInKB} kB`);
 } else {
   console.warn(`⚠️ File not found: ${file}`);
 }
