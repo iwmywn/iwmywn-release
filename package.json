@@ -21,9 +21,9 @@
     "iwmywn-release": "./dist/index.mjs"
   },
   "scripts": {
-    "build": "unbuild",
+    "build": "unbuild && tsx src/obfuscate.ts",
     "dev": "unbuild --stub",
-    "release": "npm run build && npm publish --access public"
+    "release": "pnpm run build && npm publish --access public"
   },
   "keywords": [],
   "license": "MIT",
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@types/node": "^22.14.1",
     "@types/readline-sync": "^1.4.8",
+    "javascript-obfuscator": "^4.1.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
     "unbuild": "^3.5.0"
