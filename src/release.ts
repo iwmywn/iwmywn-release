@@ -63,8 +63,9 @@ async function validateToken(): Promise<void> {
     if ((error as any)?.status === 401) {
       spinner.fail("Token is invalid or has expired.");
     } else {
-      spinner.fail(`Failed to validate token: ${error}`);
+      spinner.fail("Failed to validate token.");
     }
+    console.error(error);
     process.exit(1);
   }
 }
@@ -108,7 +109,7 @@ function findOriginDefaultBranch(): string {
       process.exit(1);
     }
   } catch (error) {
-    spinner.fail("Failed to run 'git remote show origin'.");
+    spinner.fail("Failed to run check origin default branch.");
     console.error(error);
     process.exit(1);
   }
@@ -150,7 +151,7 @@ function checkBranchSync(default_branch: string): void {
       `Local ${default_branch} branch is up to date with origin.`
     );
   } catch (error) {
-    syncSpinner.fail("Error checking branch sync status.");
+    syncSpinner.fail("Failed to check branch sync status.");
     console.error(error);
     process.exit(1);
   }
@@ -377,8 +378,10 @@ async function createGithubRelease(
 
     spinner.succeed("GitHub release created.");
   } catch (error) {
-    console.error(`Failed to create release: ${error}`);
-    console.log("Please create the release manually.");
+    spinner.fail(
+      "Failed to create release. Please create the release manually."
+    );
+    console.error(error);
     process.exit(1);
   }
 }

@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import { getOwnerAndRepo } from "./release";
+import ora from "ora";
 
 const lineDelimiter =
   "thisismylinedelimiterthatwilldefinitelynotappearintheactualcommitmessage";
@@ -36,16 +37,43 @@ type CommitTypes =
   | "revert";
 
 function getLog(): string {
+  const spinner = ora("Fetching Git log...").start();
   let range = "";
+
+  let remoteTagsRaw: string[];
   try {
-    const lastTag = execSync(`git describe --tags --abbrev=0`);
-    range = `${lastTag.toString().trim()}..HEAD`;
-  } catch {
+    remoteTagsRaw = execSync(
+      `git ls-remote --tags --refs --sort="v:refname" origin`
+    )
+      .toString()
+      .trim()
+      .split("\n");
+  } catch (error) {
+    spinner.fail("Failed to fetch remote tags.");
+    console.error(error);
+    process.exit(1);
+  }
+
+  const lastLine = remoteTagsRaw.at(-1);
+  if (lastLine) {
+    const lastTag = lastLine.split("refs/tags/")[1].trim();
+    range = `${lastTag}..HEAD`;
+  } else {
     range = "--root";
   }
-  return execSync(
-    `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`
-  ).toString();
+
+  try {
+    const log = execSync(
+      `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`
+    ).toString();
+
+    spinner.succeed("Git log fetched.");
+    return log;
+  } catch (error) {
+    spinner.fail("Failed to get Git log.");
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 const titles: Record<"feat" | "impr" | "fix", string> = {
