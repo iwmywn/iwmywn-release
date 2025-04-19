@@ -22,19 +22,19 @@ interface LogItem {
   body: string;
 }
 
-type CommitTypes =
-  | "feat"
-  | "impr"
-  | "fix"
-  | "docs"
-  | "refactor"
-  | "perf"
-  | "test"
-  | "build"
-  | "ci"
-  | "style"
-  | "chore"
-  | "revert";
+// type CommitTypes =
+//   | "feat"
+//   | "impr"
+//   | "fix"
+//   | "docs"
+//   | "refactor"
+//   | "perf"
+//   | "test"
+//   | "build"
+//   | "ci"
+//   | "style"
+//   | "chore"
+//   | "revert";
 
 const titles: { feat: string; impr: string; fix: string } = {
   feat: "Features",
