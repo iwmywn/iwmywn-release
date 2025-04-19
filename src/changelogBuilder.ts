@@ -36,7 +36,7 @@ type CommitTypes =
   | "chore"
   | "revert";
 
-const titles: Record<"feat" | "impr" | "fix", string> = {
+const titles: { feat: string; impr: string; fix: string } = {
   feat: "Features",
   impr: "Improvements",
   fix: "Bug Fixes",
@@ -80,102 +80,6 @@ function getLog(): string {
     console.error(error);
     process.exit(1);
   }
-}
-
-function getPrLink(pr: string): string {
-  const { owner, repo } = getOwnerAndRepo();
-  const prNum = pr.replace("#", "");
-  return `[#${prNum}](https://github.com/${owner}/${repo}/pull/${prNum})`;
-}
-
-function getCommitLink(hash: string, longHash: string): string {
-  const { owner, repo } = getOwnerAndRepo();
-  return `[${hash}](https://github.com/${owner}/${repo}/commit/${longHash})`;
-}
-
-function buildItems(
-  items: LogItem[],
-  mergeTypeAndScope: boolean = false
-): string {
-  let ret = "";
-  for (let item of items) {
-    let scope = item.scope ? `**${item.scope}:** ` : "";
-
-    if (mergeTypeAndScope) {
-      scope = `**${item.type}${item.scope ? `(${item.scope})` : ""}:** `;
-    }
-
-    const usernames =
-      item.usernames.length > 0 ? ` (${item.usernames.join(", ")})` : "";
-    const pr =
-      item.prs.length > 0
-        ? ` (${item.prs.map((p) => getPrLink(p)).join(", ")})`
-        : "";
-    const hash = ` (${item.hashes
-      .map((h) => getCommitLink(h.short, h.full))
-      .join(", ")})`;
-
-    ret += `- ${scope}${item.message}${usernames}${pr}${hash}\n`;
-  }
-  return ret;
-}
-
-function buildSection(type: CommitTypes, allItems: LogItem[]): string {
-  let ret = `### ${titles[type as keyof typeof titles]}\n\n`;
-
-  const items = allItems.filter(
-    (item) => item.type === type && !item.body.includes("!nuf")
-  );
-
-  if (items.length === 0) {
-    return "";
-  }
-
-  return (ret += buildItems(items));
-}
-
-function buildFooter(logs: LogItem[]): string {
-  const featLogs = logs.filter(
-    (item) => item.type === "feat" && item.body.includes("!nuf")
-  );
-  const imprLogs = logs.filter(
-    (item) => item.type === "impr" && item.body.includes("!nuf")
-  );
-  const fixLogs = logs.filter(
-    (item) => item.type === "fix" && item.body.includes("!nuf")
-  );
-  const docLogs = logs.filter((item) => item.type === "docs");
-  const refactorLogs = logs.filter((item) => item.type === "refactor");
-  const perfLogs = logs.filter((item) => item.type === "perf");
-  const testLogs = logs.filter((item) => item.type === "test");
-  const buildLogs = logs.filter((item) => item.type === "build");
-  const ciLogs = logs.filter((item) => item.type === "ci");
-  const styleLogs = logs.filter((item) => item.type === "style");
-  const choreLogs = logs.filter((item) => item.type === "chore");
-
-  const allOtherLogs = [
-    ...featLogs,
-    ...imprLogs,
-    ...fixLogs,
-    ...styleLogs,
-    ...docLogs,
-    ...refactorLogs,
-    ...perfLogs,
-    ...ciLogs,
-    ...testLogs,
-    ...buildLogs,
-    ...choreLogs,
-  ];
-
-  const uniqueOtherLogs = allOtherLogs.filter(
-    (item, index, self) =>
-      index === self.findIndex((t) => t.hashes[0].full === item.hashes[0].full)
-  );
-
-  return uniqueOtherLogs.length > 0
-    ? "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n" +
-        buildItems(uniqueOtherLogs, true)
-    : "";
 }
 
 function convertStringToLog(logString: string[]): {
@@ -226,6 +130,102 @@ function convertStringToLog(logString: string[]): {
   return { log, committers };
 }
 
+function getPrLink(pr: string): string {
+  const { owner, repo } = getOwnerAndRepo();
+  const prNum = pr.replace("#", "");
+  return `[#${prNum}](https://github.com/${owner}/${repo}/pull/${prNum})`;
+}
+
+function getCommitLink(hash: string, longHash: string): string {
+  const { owner, repo } = getOwnerAndRepo();
+  return `[${hash}](https://github.com/${owner}/${repo}/commit/${longHash})`;
+}
+
+function buildSection(type: keyof typeof titles, allItems: LogItem[]): string {
+  let ret = `### ${titles[type]}\n\n`;
+
+  const items = allItems.filter(
+    (item) => item.type === type && !item.body.includes("!nuf")
+  );
+
+  if (items.length === 0) {
+    return "";
+  }
+
+  return (ret += buildItems(items));
+}
+
+function buildItems(
+  items: LogItem[],
+  mergeTypeAndScope: boolean = false
+): string {
+  let ret = "";
+  for (let item of items) {
+    let scope = item.scope ? `**${item.scope}:** ` : "";
+
+    if (mergeTypeAndScope) {
+      scope = `**${item.type}${item.scope ? `(${item.scope})` : ""}:** `;
+    }
+
+    const usernames =
+      item.usernames.length > 0 ? ` (${item.usernames.join(", ")})` : "";
+    const pr =
+      item.prs.length > 0
+        ? ` (${item.prs.map((p) => getPrLink(p)).join(", ")})`
+        : "";
+    const hash = ` (${item.hashes
+      .map((h) => getCommitLink(h.short, h.full))
+      .join(", ")})`;
+
+    ret += `- ${scope}${item.message}${usernames}${pr}${hash}\n`;
+  }
+  return ret;
+}
+
+function buildFooter(logs: LogItem[]): string {
+  const featLogs = logs.filter(
+    (item) => item.type === "feat" && item.body.includes("!nuf")
+  );
+  const imprLogs = logs.filter(
+    (item) => item.type === "impr" && item.body.includes("!nuf")
+  );
+  const fixLogs = logs.filter(
+    (item) => item.type === "fix" && item.body.includes("!nuf")
+  );
+  const docLogs = logs.filter((item) => item.type === "docs");
+  const refactorLogs = logs.filter((item) => item.type === "refactor");
+  const perfLogs = logs.filter((item) => item.type === "perf");
+  const testLogs = logs.filter((item) => item.type === "test");
+  const buildLogs = logs.filter((item) => item.type === "build");
+  const ciLogs = logs.filter((item) => item.type === "ci");
+  const styleLogs = logs.filter((item) => item.type === "style");
+  const choreLogs = logs.filter((item) => item.type === "chore");
+
+  const allOtherLogs = [
+    ...featLogs,
+    ...imprLogs,
+    ...fixLogs,
+    ...styleLogs,
+    ...docLogs,
+    ...refactorLogs,
+    ...perfLogs,
+    ...ciLogs,
+    ...testLogs,
+    ...buildLogs,
+    ...choreLogs,
+  ];
+
+  const uniqueOtherLogs = allOtherLogs.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.hashes[0].full === item.hashes[0].full)
+  );
+
+  return uniqueOtherLogs.length > 0
+    ? "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n" +
+        buildItems(uniqueOtherLogs, true)
+    : "";
+}
+
 const header =
   "Thank you to all the contributors who made this release possible!";
 
@@ -251,7 +251,7 @@ async function buildChangelog(): Promise<string> {
   }
 
   const sections: string[] = [];
-  for (const type of Object.keys(titles) as CommitTypes[]) {
+  for (const type of Object.keys(titles) as (keyof typeof titles)[]) {
     const section = buildSection(type, log);
     if (section) {
       sections.push(section);
