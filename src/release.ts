@@ -180,10 +180,10 @@ function checkUncommittedChanges(): void {
 }
 
 // console.log(generateChangelog());
-async function generateChangelog(): Promise<string> {
+function generateChangelog(): string {
   const spinner = ora("Generating changelog...").start();
 
-  const changelog = await buildChangelog();
+  const changelog = buildChangelog();
 
   if (!changelog.trim()) {
     spinner.warn(
@@ -405,7 +405,7 @@ async function release() {
 
   checkUncommittedChanges();
 
-  const changelog = await generateChangelog();
+  const changelog = generateChangelog();
 
   console.log(changelog);
 

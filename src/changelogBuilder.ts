@@ -229,7 +229,7 @@ function buildFooter(logs: LogItem[]): string {
 const header =
   "Thank you to all the contributors who made this release possible!";
 
-async function buildChangelog(): Promise<string> {
+function buildChangelog(): string {
   const logString = getLog();
   const splitLog = logString.split(lineDelimiter);
 
