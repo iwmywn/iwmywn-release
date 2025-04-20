@@ -89,7 +89,7 @@ function convertStringToLog(logString: string[]): {
   const log: LogItem[] = [];
   const committers: string[] = [];
 
-  for (let line of logString) {
+  for (const line of logString) {
     if (line === "" || line === "\r" || line === "\n") continue;
 
     const [hash, shortHash, title, body, committer] = line
@@ -160,7 +160,7 @@ function buildItems(
   mergeTypeAndScope: boolean = false
 ): string {
   let ret = "";
-  for (let item of items) {
+  for (const item of items) {
     let scope = item.scope ? `**${item.scope}:** ` : "";
 
     if (mergeTypeAndScope) {
@@ -230,7 +230,7 @@ const header =
   "Thank you to all the contributors who made this release possible!";
 
 async function buildChangelog(): Promise<string> {
-  let logString = getLog();
+  const logString = getLog();
   const splitLog = logString.split(lineDelimiter);
 
   const { log, committers } = convertStringToLog(splitLog);
