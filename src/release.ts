@@ -291,8 +291,7 @@ function updateChangelog(
       : "";
 
     const finalContent =
-      `${versionHeader}\n\n${newContent.trim()}\n\n\n` +
-      existingContent.trimStart();
+      `${versionHeader}\n\n${newContent}\n` + existingContent;
 
     fs.writeFileSync(changelogPath, finalContent, "utf-8");
 

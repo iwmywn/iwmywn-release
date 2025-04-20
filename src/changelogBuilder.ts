@@ -221,7 +221,7 @@ function buildFooter(logs: LogItem[]): string {
   );
 
   return uniqueOtherLogs.length > 0
-    ? "\n### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n" +
+    ? "### Nerd stuff\n\nThese changes will not be visible to users, but are included for completeness and to credit contributors.\n\n" +
         buildItems(uniqueOtherLogs, true)
     : "";
 }
@@ -247,7 +247,7 @@ async function buildChangelog(): Promise<string> {
   let final = "";
 
   if (contributorCount > 1 || committers.length > 1) {
-    final += header + "\n\n\n";
+    final += header + "\n\n";
   }
 
   const sections: string[] = [];
@@ -258,7 +258,7 @@ async function buildChangelog(): Promise<string> {
     }
   }
 
-  final += sections.join("\n\n");
+  final += sections.join("\n");
 
   const footer = buildFooter(log);
   if (footer) {
