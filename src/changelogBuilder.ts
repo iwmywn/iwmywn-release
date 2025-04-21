@@ -63,10 +63,13 @@ function getLog(): string {
   const lastLine = remoteTagsRaw.at(-1);
   if (lastLine) {
     const lastTag = lastLine.split("refs/tags/")[1].trim();
+    spinner.stopAndPersist({ text: `Last tag: ${lastTag}` });
     range = `${lastTag}..HEAD`;
   } else {
     range = "--root";
   }
+
+  spinner.start();
 
   try {
     const log = execSync(
