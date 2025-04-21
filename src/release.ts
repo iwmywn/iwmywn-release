@@ -371,23 +371,40 @@ async function createGithubRelease(
   changelog: string
 ): Promise<void> {
   const spinner = ora("Creating GitHub release...").start();
+  const maxRetries = 5;
 
-  try {
-    await octokit.repos.createRelease({
-      owner,
-      repo,
-      tag_name: `v${newVer}`,
-      name: `v${newVer}`,
-      body: changelog,
-    });
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await octokit.repos.createRelease({
+        owner,
+        repo,
+        tag_name: `v${newVer}`,
+        name: `v${newVer}`,
+        body: changelog,
+      });
 
-    spinner.succeed("GitHub release created.");
-  } catch (error) {
-    spinner.fail(
-      "Failed to create release. Please create the release manually."
-    );
-    console.error(error);
-    process.exit(1);
+      spinner.succeed("GitHub release created.");
+      return;
+    } catch (error: any) {
+      const isNetworkError =
+        error?.code === "ECONNABORTED" ||
+        error?.status === 500 ||
+        error?.status === 502 ||
+        error?.status === 503 ||
+        error?.status === 504;
+
+      if (attempt < maxRetries && isNetworkError) {
+        spinner.text = `Retrying... (${attempt}/${maxRetries})`;
+        await new Promise((res) => setTimeout(res, 1000 * attempt));
+        continue;
+      }
+
+      spinner.fail(
+        `Failed to create release after ${maxRetries} attempts. Please create the release manually.`
+      );
+      console.error(error);
+      process.exit(1);
+    }
   }
 }
 
