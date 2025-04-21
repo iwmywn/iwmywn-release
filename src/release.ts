@@ -181,9 +181,9 @@ function checkUncommittedChanges(): void {
 
 // console.log(generateChangelog());
 function generateChangelog(): string {
-  const spinner = ora("Generating changelog...").start();
-
   const changelog = buildChangelog();
+
+  const spinner = ora().start();
 
   if (!changelog.trim()) {
     spinner.warn(
