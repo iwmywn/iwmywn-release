@@ -70,11 +70,6 @@ function getLog(): string {
     range = "--root";
   }
 
-  spinner.stopAndPersist({
-    text: `Last tag: ${lastTag ? lastTag : "no tags found."}`,
-  });
-  spinner.start();
-
   try {
     const log = execSync(
       `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`

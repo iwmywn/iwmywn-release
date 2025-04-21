@@ -442,6 +442,18 @@ async function release() {
   const currentVer = getCurrentVersion();
   const newVer = incrementVersion(currentVer);
 
+  if (lastTag) {
+    if (lastTag.slice(1) === currentVer) {
+      spinner.succeed("The current version matches the last tag.");
+    } else {
+      spinner.warn(
+        `Version mismatch: last tag is ${lastTag}, but package.json has v${currentVer}.`
+      );
+    }
+  } else {
+    spinner.info("No last tag found. Skipping version comparison.");
+  }
+
   if (!readlineSync.keyInYN(`Ready to release v${newVer}?`)) {
     spinner.succeed("Exiting.");
     process.exit(1);
