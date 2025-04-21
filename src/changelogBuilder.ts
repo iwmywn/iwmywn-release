@@ -42,6 +42,8 @@ const titles: { feat: string; impr: string; fix: string } = {
   fix: "Bug Fixes",
 };
 
+export let lastTag: string | undefined;
+
 function getLog(): string {
   const spinner = ora("Fetching Git log...").start();
   let range = "";
@@ -62,13 +64,15 @@ function getLog(): string {
 
   const lastLine = remoteTagsRaw.at(-1);
   if (lastLine) {
-    const lastTag = lastLine.split("refs/tags/")[1].trim();
-    spinner.stopAndPersist({ text: `Last tag: ${lastTag}` });
+    lastTag = lastLine.split("refs/tags/")[1].trim();
     range = `${lastTag}..HEAD`;
   } else {
     range = "--root";
   }
 
+  spinner.stopAndPersist({
+    text: `Last tag: ${lastTag ? lastTag : "no tags found."}`,
+  });
   spinner.start();
 
   try {

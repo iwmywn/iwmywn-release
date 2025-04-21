@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import readlineSync from "readline-sync";
 import ora from "ora";
-import { buildChangelog } from "./changelogBuilder";
+import { lastTag, buildChangelog } from "./changelogBuilder";
 
 dotenv.config();
 
@@ -284,7 +284,9 @@ function updateChangelog(
   try {
     const changelogPath = path.join(PROJECT_ROOT!, "CHANGELOG.md");
     const { owner, repo } = getOwnerAndRepo();
-    const versionHeader = `## [${newVer}](https://github.com/${owner}/${repo}/compare/v${currentVer}...v${newVer})`;
+    const versionHeader = lastTag
+      ? `## [${newVer}](https://github.com/${owner}/${repo}/compare/v${currentVer}...v${newVer})`
+      : `## ${newVer}`;
 
     const existingContent = fs.existsSync(changelogPath)
       ? fs.readFileSync(changelogPath, "utf-8")
@@ -332,7 +334,7 @@ function createCommitAndTag(newVer: string, default_branch: string): void {
 // } else {
 //   console.log(`Could not parse owner/repo`);
 // }
-export function getOwnerAndRepo(silent = true): {
+export function getOwnerAndRepo(silent: boolean = true): {
   owner: string;
   repo: string;
 } {
