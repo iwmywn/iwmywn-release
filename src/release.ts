@@ -332,7 +332,10 @@ function createCommitAndTag(newVer: string, default_branch: string): void {
 // } else {
 //   console.log(`Could not parse owner/repo`);
 // }
-export function getOwnerAndRepo(): { owner: string; repo: string } {
+export function getOwnerAndRepo(silent = true): {
+  owner: string;
+  repo: string;
+} {
   const spinner = ora("Getting GitHub owner and repo...").start();
 
   try {
@@ -344,8 +347,11 @@ export function getOwnerAndRepo(): { owner: string; repo: string } {
         owner: match[1],
         repo: match[2],
       };
-      // spinner.succeed(`Repo detected: ${result.owner}/${result.repo}`);
-      spinner.stop();
+      if (!silent) {
+        spinner.succeed(`Repo detected: ${result.owner}/${result.repo}`);
+      } else {
+        spinner.stop();
+      }
       return result;
     } else {
       spinner.fail("Invalid Git repository URL.");
@@ -425,7 +431,7 @@ async function release() {
   updatePackage(newVer);
   updateChangelog(currentVer, newVer, changelog);
   createCommitAndTag(newVer, default_branch);
-  const { owner, repo } = getOwnerAndRepo();
+  const { owner, repo } = getOwnerAndRepo(false);
   await createGithubRelease(owner, repo, newVer, changelog);
 
   spinner.stop();
