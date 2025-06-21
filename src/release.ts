@@ -71,19 +71,19 @@ async function validateToken(): Promise<void> {
 }
 
 // console.log(await getAuthenticatedUsername());
-async function getAuthenticatedUsername(): Promise<string> {
-  const spinner = ora("Fetching authenticated GitHub user...").start();
+// async function getAuthenticatedUsername(): Promise<string> {
+//   const spinner = ora("Fetching authenticated GitHub user...").start();
 
-  try {
-    const res = await octokit.rest.users.getAuthenticated();
-    spinner.succeed(`Authenticated as: ${res.data.login}`);
-    return res.data.login;
-  } catch (error) {
-    spinner.fail("Failed to fetch authenticated user.");
-    console.error(error);
-    process.exit(1);
-  }
-}
+//   try {
+//     const res = await octokit.rest.users.getAuthenticated();
+//     spinner.succeed(`Authenticated as: ${res.data.login}`);
+//     return res.data.login;
+//   } catch (error) {
+//     spinner.fail("Failed to fetch authenticated user.");
+//     console.error(error);
+//     process.exit(1);
+//   }
+// }
 
 // console.log(findOriginDefaultBranch());
 function findOriginDefaultBranch(): string {
@@ -417,12 +417,12 @@ async function release() {
   const spinner = ora().start();
   await validateToken();
 
-  const username = await getAuthenticatedUsername();
+  // const username = await getAuthenticatedUsername();
 
-  if (username !== "iwmywn") {
-    spinner.fail("Only Hoàng Anh Tuấn is allowed to perform a release.");
-    process.exit(1);
-  }
+  // if (username !== "iwmywn") {
+  //   spinner.fail("Only Hoàng Anh Tuấn is allowed to perform a release.");
+  //   process.exit(1);
+  // }
 
   const default_branch = findOriginDefaultBranch();
 

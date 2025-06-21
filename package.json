@@ -21,23 +21,23 @@
     "iwmywn-release": "./dist/index.mjs"
   },
   "scripts": {
-    "build": "unbuild && tsx src/obfuscate.ts",
+    "build": "unbuild",
     "dev": "unbuild --stub",
-    "release": "pnpm run build && npm publish --access public"
+    "release": "pnpm build && npm publish --access public"
   },
   "keywords": [],
   "license": "MIT",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.0.3",
     "@types/readline-sync": "^1.4.8",
     "javascript-obfuscator": "^4.1.1",
-    "tsx": "^4.19.3",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "unbuild": "^3.5.0"
   },
   "dependencies": {
-    "@octokit/rest": "^21.1.1",
+    "@octokit/rest": "^22.0.0",
     "dotenv": "^16.5.0",
     "ora": "^8.2.0",
     "readline-sync": "^1.4.10"
