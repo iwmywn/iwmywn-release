@@ -7,7 +7,7 @@ import readlineSync from "readline-sync";
 import ora from "ora";
 import { lastTag, buildChangelog } from "./changelogBuilder";
 
-dotenv.config();
+dotenv.config({ path: ".env.cli" });
 
 const PROJECT_ROOT = process.env.PROJECT_ROOT;
 const GH_TOKEN = process.env.GH_TOKEN;
@@ -26,7 +26,7 @@ function validateEnv(): void {
 
   if (!GH_TOKEN) {
     spinner.fail(
-      "GH_TOKEN env variable is not set.\nExample: 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\nSee: https://github.com/settings/tokens/new (scope: repo)"
+      "GH_TOKEN env variable is not set. Please add required environment variables (GH_TOKEN) to the .env.cli file.\nExample: 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\nSee: https://github.com/settings/tokens/new (scope: repo)"
     );
     process.exit(1);
   }
@@ -36,7 +36,7 @@ function validateEnv(): void {
 
   if (!PROJECT_ROOT) {
     spinner.fail(
-      `PROJECT_ROOT env variable is not set.\nExample:\n\tC:/Users/tuanh/code/iwmywn-release\n   or   C:\\\\Users\\\\tuanh\\\\code\\\\iwmywn-release`
+      `PROJECT_ROOT env variable is not set. Please add required environment variables (PROJECT_ROOT) to the .env.cli file.\nExample:\n\tC:/Users/tuanh/code/iwmywn-release\n   or   C:\\\\Users\\\\tuanh\\\\code\\\\iwmywn-release`
     );
     process.exit(1);
   }
