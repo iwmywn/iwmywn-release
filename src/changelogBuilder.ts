@@ -51,7 +51,7 @@ function getLog(): string {
   let remoteTagsRaw: string[];
   try {
     remoteTagsRaw = execSync(
-      `git ls-remote --tags --refs --sort="v:refname" origin`
+      `git ls-remote --tags --refs --sort="v:refname" origin`,
     )
       .toString()
       .trim()
@@ -72,7 +72,7 @@ function getLog(): string {
 
   try {
     const log = execSync(
-      `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`
+      `git log --oneline ${range} --pretty="format:${lineDelimiter}%H${logDelimiter}%h${logDelimiter}%s${logDelimiter}%b${logDelimiter}%cn"`,
     ).toString();
 
     spinner.succeed("Git log fetched.");
@@ -99,7 +99,7 @@ function convertStringToLog(logString: string[]): {
       .map((s) => s.trim());
 
     const match = title.match(
-      /^(\w+)(?:\(([^)]+)\))?:\s+(.+?)(?:\s*\((@[^)]+)\))?(?:\s+\((#[^)]+)\))?$/
+      /^(\w+)(?:\(([^)]+)\))?:\s+(.+?)(?:\s*\((@[^)]+)\))?(?:\s+\((#[^)]+)\))?$/,
     );
 
     if (!match) continue;
@@ -147,7 +147,7 @@ function buildSection(type: keyof typeof titles, allItems: LogItem[]): string {
   let ret = `### ${titles[type]}\n\n`;
 
   const items = allItems.filter(
-    (item) => item.type === type && !item.body.includes("!nuf")
+    (item) => item.type === type && !item.body.includes("!nuf"),
   );
 
   if (items.length === 0) {
@@ -159,7 +159,7 @@ function buildSection(type: keyof typeof titles, allItems: LogItem[]): string {
 
 function buildItems(
   items: LogItem[],
-  mergeTypeAndScope: boolean = false
+  mergeTypeAndScope: boolean = false,
 ): string {
   let ret = "";
   for (const item of items) {
@@ -186,13 +186,13 @@ function buildItems(
 
 function buildFooter(logs: LogItem[]): string {
   const featLogs = logs.filter(
-    (item) => item.type === "feat" && item.body.includes("!nuf")
+    (item) => item.type === "feat" && item.body.includes("!nuf"),
   );
   const imprLogs = logs.filter(
-    (item) => item.type === "impr" && item.body.includes("!nuf")
+    (item) => item.type === "impr" && item.body.includes("!nuf"),
   );
   const fixLogs = logs.filter(
-    (item) => item.type === "fix" && item.body.includes("!nuf")
+    (item) => item.type === "fix" && item.body.includes("!nuf"),
   );
   const docLogs = logs.filter((item) => item.type === "docs");
   const refactorLogs = logs.filter((item) => item.type === "refactor");
@@ -219,7 +219,7 @@ function buildFooter(logs: LogItem[]): string {
 
   const uniqueOtherLogs = allOtherLogs.filter(
     (item, index, self) =>
-      index === self.findIndex((t) => t.hashes[0].full === item.hashes[0].full)
+      index === self.findIndex((t) => t.hashes[0].full === item.hashes[0].full),
   );
 
   return uniqueOtherLogs.length > 0
@@ -242,7 +242,7 @@ function buildChangelog(): string {
       l.usernames.filter((u) => {
         const lower = u.toLowerCase();
         return lower !== "dependabot";
-      })
+      }),
     )
     .flat().length;
 

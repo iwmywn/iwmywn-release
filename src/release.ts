@@ -9,16 +9,14 @@ import { lastTag, buildChangelog } from "./changelogBuilder";
 
 dotenv.config({ path: ".env.cli" });
 
-const PROJECT_ROOT = process.env.PROJECT_ROOT;
+const PROJECT_ROOT = process.cwd();
 const GH_TOKEN = process.env.GH_TOKEN;
 
 const octokit = new Octokit({ auth: GH_TOKEN });
 
 const run = (cmd: string) => execSync(cmd, { stdio: "pipe" }).toString();
 const runRoot = (cmd: string) =>
-  execSync(`cd ${PROJECT_ROOT} && ${cmd}`, {
-    stdio: "pipe",
-  }).toString();
+  execSync(cmd, { cwd: PROJECT_ROOT, stdio: "pipe" }).toString();
 
 function validateEnv(): void {
   // GH_TOKEN
@@ -26,25 +24,7 @@ function validateEnv(): void {
 
   if (!GH_TOKEN) {
     spinner.fail(
-      "GH_TOKEN env variable is not set. Please add required environment variables (GH_TOKEN) to the .env.cli file.\nExample: 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\nSee: https://github.com/settings/tokens/new (scope: repo)"
-    );
-    process.exit(1);
-  }
-
-  // PROJECT_ROOT
-  spinner.text = "Checking PROJECT_ROOT variable...";
-
-  if (!PROJECT_ROOT) {
-    spinner.fail(
-      `PROJECT_ROOT env variable is not set. Please add required environment variables (PROJECT_ROOT) to the .env.cli file.\nExample:\n\tC:/Users/tuanh/code/iwmywn-release\n   or   C:\\\\Users\\\\tuanh\\\\code\\\\iwmywn-release`
-    );
-    process.exit(1);
-  }
-
-  const invalidChars = /[*?"<>|]/;
-  if (invalidChars.test(PROJECT_ROOT)) {
-    spinner.fail(
-      `PROJECT_ROOT contains invalid characters. The following characters are not allowed: * ? " < > |`
+      "GH_TOKEN env variable is not set. Please add required environment variables (GH_TOKEN) to the .env.cli file.\nExample: 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\nSee: https://github.com/settings/tokens/new (scope: repo)",
     );
     process.exit(1);
   }
@@ -118,20 +98,20 @@ function findOriginDefaultBranch(): string {
 // checkBranchSync(findOriginDefaultBranch());
 function checkBranchSync(default_branch: string): void {
   const spinner = ora(
-    `Checking if local branch is ${default_branch}...`
+    `Checking if local branch is ${default_branch}...`,
   ).start();
 
   const currentBranch = runRoot("git branch --show-current").trim();
   if (currentBranch !== default_branch) {
     spinner.fail(
-      `Local branch is not ${default_branch}. Please checkout the ${default_branch} branch.`
+      `Local branch is not ${default_branch}. Please checkout the ${default_branch} branch.`,
     );
     process.exit(1);
   }
   spinner.succeed(`Local branch: ${default_branch}.`);
 
   const syncSpinner = ora(
-    `Checking if local ${default_branch} branch is in sync with origin...`
+    `Checking if local ${default_branch} branch is in sync with origin...`,
   ).start();
 
   try {
@@ -142,13 +122,13 @@ function checkBranchSync(default_branch: string): void {
 
     if (local !== remote) {
       syncSpinner.fail(
-        `Local ${default_branch} branch is not in sync with origin. Please pull the latest changes.`
+        `Local ${default_branch} branch is not in sync with origin. Please pull the latest changes.`,
       );
       process.exit(1);
     }
 
     syncSpinner.succeed(
-      `Local ${default_branch} branch is up to date with origin.`
+      `Local ${default_branch} branch is up to date with origin.`,
     );
   } catch (error) {
     syncSpinner.fail("Failed to check branch sync status.");
@@ -166,7 +146,7 @@ function checkUncommittedChanges(): void {
 
     if (status) {
       spinner.fail(
-        "You have uncommitted changes. Please commit or stash them before proceeding."
+        "You have uncommitted changes. Please commit or stash them before proceeding.",
       );
       process.exit(1);
     }
@@ -187,7 +167,7 @@ function generateChangelog(): string {
 
   if (!changelog.trim()) {
     spinner.warn(
-      "No new contributions found since the last release. Consider carefully whether a release is necessary."
+      "No new contributions found since the last release. Consider carefully whether a release is necessary.",
     );
   } else {
     spinner.succeed("Changelog generated.");
@@ -202,7 +182,7 @@ function getCurrentVersion(): string {
 
   try {
     const currentVersion = JSON.parse(
-      fs.readFileSync("package.json", "utf8")
+      fs.readFileSync("package.json", "utf8"),
     ).version;
 
     spinner.succeed(`Current version: v${currentVersion}`);
@@ -227,7 +207,7 @@ function incrementVersion(currentVersion: string): string {
       ((now.getTime() - startOfYear.getTime()) / 86400000 +
         startOfYear.getDay() +
         1) /
-        7
+        7,
     );
 
     const [prevYear, prevWeek, minor] = currentVersion.split(".").map(Number);
@@ -277,7 +257,7 @@ function updatePackage(newVer: string): void {
 function updateChangelog(
   currentVer: string,
   newVer: string,
-  newContent: string
+  newContent: string,
 ): void {
   const spinner = ora("Updating CHANGELOG.md...").start();
 
@@ -338,8 +318,6 @@ export function getOwnerAndRepo(silent: boolean = true): {
   owner: string;
   repo: string;
 } {
-  const spinner = ora("Getting GitHub owner and repo...").start();
-
   try {
     const remoteUrl = runRoot("git remote get-url origin").trim();
 
@@ -350,17 +328,15 @@ export function getOwnerAndRepo(silent: boolean = true): {
         repo: match[2],
       };
       if (!silent) {
-        spinner.succeed(`Repo detected: ${result.owner}/${result.repo}`);
-      } else {
-        spinner.stop();
+        ora().succeed(`Repo detected: ${result.owner}/${result.repo}`);
       }
       return result;
     } else {
-      spinner.fail("Invalid Git repository URL.");
+      ora().fail("Invalid Git repository URL.");
       process.exit(1);
     }
   } catch (error) {
-    spinner.fail("Failed to get repo info.");
+    ora().fail("Failed to get repo info.");
     console.error(error);
     process.exit(1);
   }
@@ -370,7 +346,7 @@ async function createGithubRelease(
   owner: string,
   repo: string,
   newVer: string,
-  changelog: string
+  changelog: string,
 ): Promise<void> {
   const spinner = ora("Creating GitHub release...").start();
   const maxRetries = 5;
@@ -402,7 +378,7 @@ async function createGithubRelease(
       }
 
       spinner.fail(
-        `Failed to create release after ${maxRetries} attempts. Please create the release manually.`
+        `Failed to create release after ${maxRetries} attempts. Please create the release manually.`,
       );
       console.error(error);
       process.exit(1);
@@ -414,15 +390,8 @@ async function release() {
   validateEnv();
 
   console.log("\n\t\t🚀 STARTING RELEASE PROCESS...\n");
-  const spinner = ora().start();
+
   await validateToken();
-
-  // const username = await getAuthenticatedUsername();
-
-  // if (username !== "iwmywn") {
-  //   spinner.fail("Only Hoàng Anh Tuấn is allowed to perform a release.");
-  //   process.exit(1);
-  // }
 
   const default_branch = findOriginDefaultBranch();
 
@@ -435,7 +404,7 @@ async function release() {
   console.log(changelog);
 
   if (!readlineSync.keyInYN("Changelog looks good?")) {
-    spinner.succeed("Exiting.");
+    ora().succeed("Exiting.");
     process.exit(1);
   }
 
@@ -444,18 +413,18 @@ async function release() {
 
   if (lastTag) {
     if (lastTag.slice(1) === currentVer) {
-      spinner.succeed("The current version matches the last tag.");
+      ora().succeed("The current version matches the last tag.");
     } else {
-      spinner.warn(
-        `Version mismatch: last tag is ${lastTag}, but package.json has v${currentVer}.`
+      ora().warn(
+        `Version mismatch: last tag is ${lastTag}, but package.json has v${currentVer}.`,
       );
     }
   } else {
-    spinner.info("No last tag found. Skipping version comparison.");
+    ora().info("No last tag found. Skipping version comparison.");
   }
 
   if (!readlineSync.keyInYN(`Ready to release v${newVer}?`)) {
-    spinner.succeed("Exiting.");
+    ora().succeed("Exiting.");
     process.exit(1);
   }
 
@@ -464,8 +433,6 @@ async function release() {
   createCommitAndTag(newVer, default_branch);
   const { owner, repo } = getOwnerAndRepo(false);
   await createGithubRelease(owner, repo, newVer, changelog);
-
-  spinner.stop();
 }
 
 export { release };
